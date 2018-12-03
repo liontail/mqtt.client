@@ -1,8 +1,8 @@
-````
 Mqtt Client Singleton 
+======
 ## Example (How to use)
 
-
+```go
 package main
 
 import (
@@ -15,7 +15,7 @@ mqClient ,err := client.Connect(userName, password, url)
 // or use this anywhere to get client 
 mqClient := client.GetClient()
 
-....
+...
 
 // To Subscribe topic
 
@@ -29,4 +29,7 @@ mqClient.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 f := func(msg mqtt.Message){
     fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
 }
+
 client.ListenTo(mqClient, topic, f)
+...
+```
