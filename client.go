@@ -10,7 +10,7 @@ import (
 
 var mqttClient *mqtt.Client
 
-func Connect(userName, password, url string) error {
+func Connect(userName, password, url string) (mqtt.Client, error) {
 	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s", url))
 	opts.SetUsername(userName)
 	opts.SetPassword(password)
@@ -18,22 +18,22 @@ func Connect(userName, password, url string) error {
 	token := client.Connect()
 
 	for !token.WaitTimeout(3 * time.Second) {
-		return errors.New("Connection MQTT Timeout")
+		return nil, errors.New("Connection MQTT Timeout")
 	}
 	if err := token.Error(); err != nil {
-		return err
+		return nil, err
 	}
 	mqttClient = &client
 	fmt.Printf("MQTT %s Connected", url)
-	return nil
+	return client, nil
 }
 
-func GetClient() *mqtt.Client {
-	return mqttClient
+func GetClient() mqtt.Client {
+	return *mqttClient
 }
 
-func ListenTo(client *mqtt.Client, topic string, f func(mqtt.Message)) {
-	(*client).Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
+func ListenTo(client mqtt.Client, topic string, f func(mqtt.Message)) {
+	client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		// fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
 		f(msg)
 	})
