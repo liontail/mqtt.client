@@ -24,7 +24,7 @@ mqClient.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 })
 
 
-// or use func Listo
+// or use func ListenTo
 
 f := func(msg mqtt.Message){
     fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
