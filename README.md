@@ -32,8 +32,11 @@ f := func(msg mqtt.Message){
 
 client.ListenTo(mqClient, topic, f)
 
+
+// Your sever mqtt should get json { "op": "pull", "clientId": "xxx", "dbname": "xxx" }
+// And send all data back to topic name xxx from db's name xxx
 data , err := client.GetMessageFromBeginning(client, "client_name", "db_name"))
 
-// data = []byte
+// return data = []byte
 ...
 ```
