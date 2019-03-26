@@ -6,7 +6,7 @@ Mqtt Client Singleton
 package main
 
 import (
-    "github.com/liontail/mqtt.client"
+    client "github.com/liontail/mqtt.client"
 )
 
 mqClient ,err := client.Connect(userName, password, url)
@@ -31,5 +31,9 @@ f := func(msg mqtt.Message){
 }
 
 client.ListenTo(mqClient, topic, f)
+
+data , err := client.GetMessageFromBeginning(client, "client_name", "db_name"))
+
+// data = []byte
 ...
 ```
