@@ -44,11 +44,6 @@ func GetMessageFromBeginning(client mqtt.Client, clientName, dbName string) ([]b
 	forever := make(chan bool)
 	var err error
 	f := func(m mqtt.Message) {
-		go func(ch chan bool) {
-			time.Sleep(time.Second * 5)
-			err = fmt.Errorf("Cannot Get all data from: %s", dbName)
-			<-forever
-		}(forever)
 		data = m.Payload()
 		err = nil
 		forever <- true
@@ -59,6 +54,11 @@ func GetMessageFromBeginning(client mqtt.Client, clientName, dbName string) ([]b
 		// fmt.Println("Error Publish:", token.Error())
 		return nil, token.Error()
 	}
+	go func(ch chan bool) {
+		time.Sleep(time.Second * 5)
+		err = fmt.Errorf("Couldn't get data from: %s", dbName)
+		ch <- true
+	}(forever)
 	<-forever
 	return data, err
 }
