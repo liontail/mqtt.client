@@ -24,7 +24,7 @@ func Connect(userName, password, url string) (mqtt.Client, error) {
 		return nil, err
 	}
 	mqttClient = &client
-	fmt.Printf("MQTT %s Connected", url)
+	// fmt.Println("MQTT", url, "Connected")
 	return client, nil
 }
 
@@ -34,7 +34,31 @@ func GetClient() mqtt.Client {
 
 func ListenTo(client mqtt.Client, topic string, f func(mqtt.Message)) {
 	client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-		// fmt.Printf("* [%s] %s\n", msg.Topic(), string(msg.Payload()))
 		f(msg)
 	})
+}
+
+func GetMessageFromBeginning(client mqtt.Client, clientName, dbName string) ([]byte, error) {
+	serviceName := fmt.Sprintf("%s-%s", clientName, time.Now().Format("150405"))
+	data := []byte{}
+	forever := make(chan bool)
+	var err error
+	f := func(m mqtt.Message) {
+		go func(ch chan bool) {
+			time.Sleep(time.Second * 5)
+			err = fmt.Errorf("Cannot Get all data from: %s", dbName)
+			<-forever
+		}(forever)
+		data = m.Payload()
+		err = nil
+		forever <- true
+	}
+	go ListenTo(client, serviceName, f)
+	token := client.Publish("master", 0, false, fmt.Sprintf(`{ "op": "pull", "clientId": "%s", "dbname": "%s" }`, serviceName, dbName))
+	if token.Error() != nil {
+		// fmt.Println("Error Publish:", token.Error())
+		return nil, token.Error()
+	}
+	<-forever
+	return data, err
 }
